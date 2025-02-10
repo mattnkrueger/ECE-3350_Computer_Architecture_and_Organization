@@ -16,7 +16,13 @@ module testbench_fourBitFullAdder;
 	wire cout;
 
 	// implement four bit adder
-	fourBitFullAdder fbfa (.a(a), .b(b), .cin(cin), .sum(sum), .cout(cout)
+	fourBitFullAdder fbfa (
+      .a(a), 
+      .b(b), 
+      .cin(cin), 
+      .sum(sum), 
+      .cout(cout)
+    );
 
 	// INITIALZE
 	initial begin
@@ -29,7 +35,7 @@ module testbench_fourBitFullAdder;
 		cin = 1'b0;
 
 		#50; 
-		$display("Test 1: %b + %b + %b -> sum = %b, carry = %b", a, b, cin, sum, cout);
+		$monitor("Test 1: %04b + %04b + %04b -> sum = %04b, carry = %04b", a, b, cin, sum, cout);
 		
 		// test case 2
 		// a=1, b=1, cin=0
@@ -40,7 +46,7 @@ module testbench_fourBitFullAdder;
 		cin = 1'b0;
 
 		#50; 
-		$display("Test 1: %b + %b + %b -> sum = %b, carry = %b", a, b, cin, sum, cout);
+		$monitor("Test 1: %04b + %04b + %04b -> sum = %04b, carry = %04b", a, b, cin, sum, cout);
 
 		// test case 3
 		// a=3, b=4, cin=0
@@ -51,7 +57,7 @@ module testbench_fourBitFullAdder;
 		cin = 1'b0;
 
 		#50; 
-		$display("Test 1: %b + %b + %b -> sum = %b, carry = %b", a, b, cin, sum, cout);
+		$monitor("Test 1: %04b + %04b + %04b -> sum = %04b, carry = %04b", a, b, cin, sum, cout);
 
 		// test case 4
 		// a=7, b=8, cin=1
@@ -62,7 +68,7 @@ module testbench_fourBitFullAdder;
 		cin = 1'b0;
 
 		#50; 
-		$display("Test 1: %b + %b + %b -> sum = %b, carry = %b", a, b, cin, sum, cout);
+		$monitor("Test 1: %04b + %04b + %04b -> sum = %04b, carry = %04b", a, b, cin, sum, cout);
 
 		// test case 5
 		// a=15, b=5, cin=1
@@ -73,8 +79,9 @@ module testbench_fourBitFullAdder;
 		cin = 1'b0;
 
 		#50; 
-		$display("Test 1: %b + %b + %b -> sum = %b, carry = %b", a, b, cin, sum, cout);
+		$monitor("Test 1: %04b + %04b + %04b -> sum = %04b, carry = %04b", a, b, cin, sum, cout);
 
 		$finish;
 	end
+
 endmodule
