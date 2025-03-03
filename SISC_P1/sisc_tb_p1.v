@@ -12,35 +12,37 @@ module sisc_tb;
 
   // component instantiation
   // "uut" stands for "Unit Under Test"
- 
-  sisc uut ( clk, rst_f, ir);
+  sisc uut (clk, rst_f, ir);
 
   // clock driver
   initial
   begin
     clk = 0;    
   end
-	
+    
   always
   begin
     #(tclk/2.0);
     clk = ~clk;
   end
  
-  // reset control
+  // reset control - hold RST_F at 0 for two clock cycles (20ns)
   initial 
   begin
     rst_f = 0;
-    // wait for 20 ns;
     #20; 
     rst_f = 1;
   end
 
-
+  // Test sequence
   initial
   begin
+    // Initial NOP with 25ns delay after reset
+    ir = 32'h00000000;  // NOP
+    #25;  
+
     // To test all of the arithmetic instructions:
-        ir = 32'h00000000; //NOP
+    ir = 32'h00000000; //NOP
     #85 ir = 32'h21100001; //ADI  R1 <- R0 + (0x0000)0001
     #50 ir = 32'h11211000; //ADD  R2 <- R1 + R1
     #50 ir = 32'h1B322000; //SHL  R3 <- R2 << [R2]
@@ -52,7 +54,6 @@ module sisc_tb;
     #50 ir = 32'h15524000; //OR   R5 <- R2 | R4
     #50 ir = 32'h16324000; //AND  R3 <- R2 & R4
     #50 ir = 32'h00000000; //NOP
-
 	/*
 	 * At this point, registers should be as follows:
 	 *   R1: 00000001		R4: FE000011
@@ -67,7 +68,18 @@ module sisc_tb;
     #50 ir = 32'h18311000; //ROR  R3 <- R1 >> [R1]
     #50 ir = 32'h11423000; //ADD  R4 <- R2 + R3           (STAT: 1100)
     #50 ir = 32'hF0000000; //HALT
+  end
 
+  // Monitor important signals
+  initial
+  begin
+    $monitor("Time=%0d IR=%h R1=%h R2=%h R3=%h R4=%h R5=%h",
+             $time, ir, 
+             uut.my_rf.ram_array[1],
+             uut.my_rf.ram_array[2],
+             uut.my_rf.ram_array[3],
+             uut.my_rf.ram_array[4],
+             uut.my_rf.ram_array[5]);
   end
  
 endmodule
