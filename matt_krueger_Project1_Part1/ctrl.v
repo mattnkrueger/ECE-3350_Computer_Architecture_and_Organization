@@ -1,4 +1,4 @@
-// ECE:3350 SISC computer project
+// ECE:3350 SISC processor project
 // finite state machine
 
 `timescale 1ns/100ps
@@ -135,7 +135,7 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel);
           
         default:
         // default values 
-        // register file write still disabled (need to read)
+        // register file write still disabled
         // write back no
         // no operation by alu
           begin
