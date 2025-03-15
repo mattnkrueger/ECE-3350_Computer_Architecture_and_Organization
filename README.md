@@ -1,4 +1,4 @@
-# ECEE:3350 - Computer Architecture and Organization
+# ECEE:3350 - Computer Architecture and Organization (Spring 2025)
 
 ## Course Information
 
