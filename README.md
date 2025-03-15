@@ -1,9 +1,10 @@
-# Computer Architecture and Organization
+# ECEE:3350 - Computer Architecture and Organization
 
 ## Course Information
-This repository contains materials for the __Computer Architecture and Organization__ course taught by Professor James Maxted at the University of Iowa.
 
 The course follows the [Computer Organization and Embedded Systems (Sixth Edition)](https://www.v2vclass.com/images/coursepdf/bsc-cssem1/bsc-cssem1/co/fy-cs.pdf) texbook.Additionally, the course includes practical components with basic Verilog HDL with coding projects.
+
+This course is taught by Professor James Maxted
 
 ## Repository Structure
 
