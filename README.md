@@ -1,10 +1,9 @@
 # ECEE:3350 - Computer Architecture and Organization (Spring 2025)
+**Instructor:** Professor Thomas Casavant, University of Iowa
 
 ## Course Information
 
-The course follows the [Computer Organization and Embedded Systems (Sixth Edition)](https://www.v2vclass.com/images/coursepdf/bsc-cssem1/bsc-cssem1/co/fy-cs.pdf) texbook.Additionally, the course includes practical components with basic Verilog HDL with coding projects.
-
-This course is taught by Professor James Maxted
+The course follows the [Computer Organization and Embedded Systems (Sixth Edition)](https://www.v2vclass.com/images/coursepdf/bsc-cssem1/bsc-cssem1/co/fy-cs.pdf) texbook. Additionally, the course covered practical components with basic Verilog HDL with coding projects.
 
 ## Repository Structure
 
