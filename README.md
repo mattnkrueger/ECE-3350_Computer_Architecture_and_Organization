@@ -1,5 +1,5 @@
 # ECEE:3350 - Computer Architecture and Organization (Spring 2025)
-**Instructor:** Professor Thomas Casavant, University of Iowa
+**Instructor:** Professor James Maxstead, University of Iowa
 
 ## Course Information
 
