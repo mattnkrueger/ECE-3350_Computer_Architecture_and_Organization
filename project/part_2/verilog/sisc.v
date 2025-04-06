@@ -33,7 +33,12 @@ module sisc (clk, rst_f, ir);
            stat,
            rf_we,
            alu_op,
-           wb_sel); 
+           wb_sel, 
+           br_sel,                    // part 2 extension of ctrl unit
+           pc_rst,                    // these are simply ctrl signals 1 bit.
+           pc_write,
+           pc_sel,
+           ir_load); 
 
   rf u2 (clk,                         // register file
          ir[19:16],
@@ -65,7 +70,6 @@ module sisc (clk, rst_f, ir);
               stat_en,
               stat);
 
-  // TODO - Connect these to where they should be connected to 
   pc u7 (clk,                         // program counter
         br_addr,
         pc_sel,

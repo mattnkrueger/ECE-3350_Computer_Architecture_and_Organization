@@ -18,24 +18,24 @@ module ir (clk, ir_load, read_data, instr);
    *
    */
   
-  input         clk;
-  input         ir_load;
-  input  [31:0] read_data;
-  output [31:0] instr;
+  input clk;                      // system clock
+  input ir_load;                  // instruction load signal. if ir_load == 1 ? load : dont load
+  input [31:0] read_data;         // contents of the current instruction
 
-  wire          clk;
-  wire          ir_load;
-  wire   [31:0] read_data;
-  reg    [31:0] instr;
+  wire clk;                       
+  wire ir_load;                   
+  wire [31:0] read_data;
+
+  reg [31:0] instr;
+  output [31:0] instr;            // output of the contents of the current instruction
+
  
   // instruction register
-  
   initial
-    instr <= 32'h00000000;
+    instr <= 32'h00000000;        // at boot, start at the 0th (fisrt) instruction in memory
 
-  always @(posedge clk)
-    if (ir_load == 1'b1)
+  always @(posedge clk)           // at positive edge of clock (this is a pipelined sisc, so a new five step pipeline begins on each clock)
+    if (ir_load == 1'b1)          // if load signal present, the current instruction becomes the instruction passed into module
       instr <= read_data;
-  
 
 endmodule

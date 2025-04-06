@@ -11,12 +11,13 @@
 
 `timescale 1ns/100ps
 
-module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst, pc_write, pc_sel, ir_load);
+module ctrl (clk, rst_f, opcode, mm, stat, instr, rf_we, alu_op, wb_sel, br_sel, pc_rst, pc_write, pc_sel, ir_load);
   input clk;                                        // clock signal
   input rst_f;                                      // reset signal
   input [3:0] opcode;                               // opcode from the instruction register
   input [3:0] mm;                                   // memory mode from the instruction register
   input [3:0] stat;                                 // status register CCs
+  input [31:0] instr;                               // current instruction from the im
 
   output reg rf_we;                                 // register file writeback enable signal
   output reg wb_sel;                                // writeback select signal
@@ -37,25 +38,9 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
   parameter mem       = 5;                          // (M)emory
   parameter writeback = 6;                          // (W)riteback
    
-  // current accepted opcodes. Note that the opcode input is 4 bits. These are 4 bit codes that are checked 
-  // parameter NOOP   = 0;
-  // parameter REG_OP = 1;
-  // parameter REG_IM = 2;
-  // parameter SWAP   = 3;
-  // parameter BRA    = 4;
-  // parameter BRR    = 5;
-  // parameter BNE    = 6;
-  // parameter BNR    = 7;          // commenting out these opcodes, im guessing with the inclusion of a instruction memory, these hardcoded ones are not necessary
-  // parameter JPA    = 8;
-  // parameter JPR    = 9;
-  // parameter LOD    = 10;
-  // parameter STR    = 11;
-  // parameter CALL   = 12;
-  // parameter RET    = 13;
-  // parameter HLT    = 15;
-  	
   // state registers
-  reg [2:0]  present_state, next_state;
+  reg [2:0] present_state;
+  reg [2:0] next_state;
 
   // start at state 0
   initial
@@ -106,61 +91,70 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
     end
   end
 
-  // create control signals from the inputs
-  // determine the instruction format (note this is little endian. I think the image in the book is big endian, so i mirror register contents. This aligns more with what is provided in the project)
-  // a) register operand format
-  // b) immediate operand format
-  // c) call format
+  // non starting states - 5 stage pipeline of sisc machine 
   always @(present_state, opcode)
   begin
 
+    // default signals subject to change during current pipeline stage
     rf_we  = 1'b0;                          // set rf_we to 0 (no writebacks)
     wb_sel = 1'b0;                          // set select to 0 (select 0)
     alu_op = 4'b0000;                       // set opcode to nop 
-    // add default values for the rest of the signals
+    br_sel = 1'b0;                          // no branch selected; normal operation
+    pc_rst = 1'b0;                          // no reset of pc; normal operation
+    pc_sel = 1'b0;                          // normal increment of pc
+    ir_load = 1'b0;                         // do not load ir. this is only done inside of the fetch state.
         
     case(present_state)
 
-      fetch:
-      begin
-        // fetch next instruction in memory using pc
-        // need to do something here to include the pc and branching
-      end
+      // 1. (F)etch
+        fetch:
+        begin
+          ir_load = 1'b1;                     // load the next instruction; testbench should handle program simulation 
+          pc_sel = 1'b0;                      // increment program counter; saves PC+1 to the program counter
+        end
 
+      // 2. (D)ecode
       decode:
-      begin
-        // pass current instruction in memory off to ir
-        // need to do something here to include the branching
-      end
+        begin
+          // determine whether branch signals are to be used. 
+          if (opcode == )
+          
 
-      execute:                              // operations for (C)ompute state
-      begin
-        if (opcode == REG_OP)
-          alu_op = 4'b0001;               
-        if (opcode == REG_IM)
-          alu_op = 4'b0011;                
-      end
+          // need to do something here to include the branching
+        end
 
-      mem:                                  // operations for (M)emory state
-      begin
-        if (opcode == REG_OP)
-          alu_op = 4'b0000;                 
-        if (opcode == REG_IM)
-          alu_op = 4'b0010;                 
-      end
+      // 3. (C)ompute
+      execute:                 
+        begin
+          if (opcode == REG_OP)
+            alu_op = 4'b0001;               
+          if (opcode == REG_IM)
+            alu_op = 4'b0011;                
+        end
 
-      writeback:                            // operations for (W)riteback state
-      begin
-        if (opcode == REG_OP || opcode == REG_IM)
-          rf_we  = 1'b1;
-      end
+      // 4. (M)emory
+      mem:                    
+        begin
+          if (opcode == REG_OP)
+            alu_op = 4'b0000;                 
+          if (opcode == REG_IM)
+            alu_op = 4'b0010;                 
+        end
 
-      default:                              // default - nothing happens
-      begin
-        rf_we  = 1'b0;
-        wb_sel = 1'b0;
-        alu_op = 4'b0000;
-      end
+      // 5. (W)riteback
+      writeback:             
+        begin
+          if (opcode == REG_OP || opcode == REG_IM)
+            rf_we  = 1'b1;
+        end
+
+      // otherwise
+      default:      
+        begin
+          rf_we  = 1'b0;
+          wb_sel = 1'b0;
+          alu_op = 4'b0000;
+        end
       
     endcase
   end

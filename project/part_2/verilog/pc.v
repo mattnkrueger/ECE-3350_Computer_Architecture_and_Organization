@@ -31,7 +31,7 @@ module pc (clk, br_addr, pc_sel, pc_write, pc_rst, pc_out);
   input pc_rst;                     // if pc_rst == 1 ? reset program counter : continue
   output [15:0] pc_out;             // points to the next instruction in memory
 
-  reg [15:0] pc_in;                 // next program counter 
+  reg [15:0] pc_in;                 // next program counter (SHOULDNT THIS BE AN INPUT???)
   reg [15:0] pc_out;                // output of the next instruction in memory
  
   // program counter latch
