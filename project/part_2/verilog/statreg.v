@@ -20,22 +20,25 @@ module statreg (clk, in, enable, out);
    *
    */
 
-  input        clk;
-  input  [3:0] in, enable;
-  output [3:0] out;
+  input clk;                                                    // system clock
+  input [3:0] in;                                               // input CCs from the alu operation performed
+  input [3:0] enable;                                           // enable for CCs 
 
-  reg   [3:0] outreg;
+  reg   [3:0] outreg;                                           // store CCs from status register
 
+  output [3:0] out;                                             // output CCs from status register
+
+  // initially, se the output register to 0000 - CVNZ not set
   initial
     outreg = 4'b0000;
    
   always @ (posedge clk) begin
-    outreg[0] <= (enable[0] ? in[0] : outreg[0]);
-    outreg[1] <= (enable[1] ? in[1] : outreg[1]);
-    outreg[2] <= (enable[2] ? in[2] : outreg[2]);
-    outreg[3] <= (enable[3] ? in[3] : outreg[3]);
+    outreg[0] <= (enable[0] ? in[0] : outreg[0]);               // (Z)ero
+    outreg[1] <= (enable[1] ? in[1] : outreg[1]);               // (N)egative
+    outreg[2] <= (enable[2] ? in[2] : outreg[2]);               // o(V)erflow
+    outreg[3] <= (enable[3] ? in[3] : outreg[3]);               // (C)arry
   end
 
-  assign out = outreg;
+  assign out = outreg;                                          // output the outreg populated at positive edge
 
 endmodule 

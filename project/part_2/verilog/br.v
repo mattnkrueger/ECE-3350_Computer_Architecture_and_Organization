@@ -25,21 +25,21 @@ module br (pc_out, imm, br_sel, br_addr);
    *
    */
 
-  input  [15:0] pc_out;
-  input  [15:0] imm;
-  input         br_sel;
-  output [15:0] br_addr;
+  input [15:0] pc_out;                        // program counter to add relative offset to 
+  input [15:0] imm;                           // immediate offset
+  input br_sel;                               // branch select. if br_sel == 1 ? absolute : relative
+
+  output [15:0] br_addr;                      // branch address to be inputted as next ir 
  
-  reg   [15:0] br_in;
-   
+  reg [15:0] br_in;                           // branch input to add to. if br_sel == 1 ? absolute (0x0000 + immediate) : relative (pc_out + immediate)
   always @ (pc_out, br_sel)
   begin
     if (br_sel == 1'b1)
-      br_in <= 16'h0000;
+      br_in <= 16'h0000;                       // absolute branch: branch selection soley the immediate value 
     else
-      br_in <= pc_out;
+      br_in <= pc_out;                         // relative branch: branch input sum of current pc and immediate value (via a label or known memory address)
   end
 
-  assign br_addr = br_in + imm;
+  assign br_addr = br_in + imm;               // simply compute the offset from branch and immediate. 
 
 endmodule

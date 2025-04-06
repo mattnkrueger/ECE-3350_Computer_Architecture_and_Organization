@@ -24,32 +24,32 @@ module pc (clk, br_addr, pc_sel, pc_write, pc_rst, pc_out);
    *
    */
 
-  input         clk;
-  input  [15:0] br_addr;
-  input         pc_sel;
-  input         pc_write;
-  input         pc_rst;
-  output [15:0] pc_out;
+  input clk;                        // system clock
+  input [15:0] br_addr;             // computed branch address
+  input pc_sel;                     // if pc_sel == 1 ? save branch : normal increment of pc
+  input pc_write;                   // if pc_write == 1 ? output pc : hold pc until pc_en set
+  input pc_rst;                     // if pc_rst == 1 ? reset program counter : continue
+  output [15:0] pc_out;             // points to the next instruction in memory
 
-  reg    [15:0] pc_in;
-  reg    [15:0] pc_out;
+  reg [15:0] pc_in;                 // next program counter 
+  reg [15:0] pc_out;                // output of the next instruction in memory
  
   // program counter latch
   always @(posedge clk)
   begin
     if (pc_rst == 1'b1)
-      pc_out <= 16'h0000;
+      pc_out <= 16'h0000;            // reset pc to 0x0000
     else
       if (pc_write == 1'b1)
-        pc_out <= pc_in;
+        pc_out <= pc_in;             // set pc to pc_in which is calculated below
   end
   
   always @(br_addr, pc_out, pc_sel)
   begin
     if (pc_sel == 1'b0)
-      pc_in <= pc_out + 1;
+      pc_in <= pc_out + 1;            // no branch; increment current program counter by one. Incremented by 1 because 256KB of word length of 32. Each instruction takes one 'row' of memory in the array
     else
-      pc_in <= br_addr;
+      pc_in <= br_addr;               // branch; add current program counter to branch address
   end
 
 endmodule
