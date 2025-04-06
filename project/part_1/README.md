@@ -3,10 +3,12 @@
 ## Overview
 This project is part of the ECE:3350 Computer Architecture and Organization course for Spring 2025. It involves implementing a Simple Instruction Set Computer (SISC) using Verilog HDL.
 
-## Block Diagram
-![Project 1 Block Diagram](project_1_diagram.png)
+## Notes
+Here are some notes taken in preparation for the project
+- [project1](../part_1/notes/part1.pdf)
 
-## Files Structure
+## Block Diagram
+![Project 1 Block Diagram](../part_1/img/project_1_diagram.png)
 
 ### Given Files not to be Modified
 - `alu.v` - Arithmetic Logic Unit
@@ -49,6 +51,7 @@ This project is part of the ECE:3350 Computer Architecture and Organization cour
 - write_data input of the RF module
 
 ## Part 1 Completed Project Files
+Grade received: 76/76
 - [alu.v](alu.v)
 - [rf.v](rf.v)
 - [statreg.v](statreg.v)

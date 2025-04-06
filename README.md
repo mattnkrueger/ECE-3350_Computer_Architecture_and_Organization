@@ -17,11 +17,10 @@ This section contains all homework assignments and their solutions:
 * [Homework 6](homework/homework_6.pdf)
 * [Homework 7](homework/homework_7.pdf)
 * [Homework 8](homework/homework_8.pdf)
+* [Homework 9](homework/homework_9.pdf)
+* [Homework 10](homework/homework_10.pdf)
 
 ### Project
-The course includes a Verilog HDL project divided into three parts. For detailed information about the entire project, please refer to the [Project README](project/README.md).
-
-Project components:
 * [Project Part 1](project/part_1/README.md) 
 * [Project Part 2](project/part_2/README.md)
 * [Project Part 3](project/part_3/README.md) 
