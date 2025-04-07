@@ -24,7 +24,7 @@ module im (read_addr, read_data);
 
   // load program into ram array
   initial begin : prog_load
-    $readmemh("imem.data", ram_array);         // read hex file imem.data. Please note that in this git repo, I have imem.data in its own folder for organization reasons. Either alter the path or move file into verilog folder
+    $readmemh("C:/Users/mkrue/workspace/simulation_pt2/imem.data", ram_array);         // read hex file imem.data. Please note that in this git repo, I have imem.data in its own folder for organization reasons. Either alter the path or move file into verilog folder
   end
  
   // read process is sensitive to read address.

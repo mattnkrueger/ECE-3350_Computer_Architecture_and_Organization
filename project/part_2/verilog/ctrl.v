@@ -78,9 +78,6 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
       start0:
         next_state = start1;
       start1:
-	  if (rst_f == 1'b0) 
-        next_state = start1;
-	 else
          next_state = fetch;
       fetch:
         next_state = decode;
@@ -124,6 +121,12 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
     ir_load  = 1'b0;          // if 1 -> load ir,  0 -> do not load                
         
     case(present_state)
+
+      start1:
+        begin
+          pc_rst = 1'b1;
+          pc_write = 1'b1;
+        end
 
       // 1. (F)etch
       // load ir from memory, increment pc
@@ -197,7 +200,7 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
               alu_op = 4'b0011;                
             end
 
-          // what was in part 1should be sufficient; this handles the two types of call formats. All that was needed for part 2 was branching logic & additional signals
+          // what was in part 1 should be sufficient; this handles the two types of call formats. All that was needed for part 2 was branching logic & additional signals
           // dont do anything for branching. the changes should take effect on the next load. ALU not required.
         end
 

@@ -93,7 +93,7 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
         br_sel,
         br_addr);
 
-  im sisc_im (read_addr,                   // instruction memory
+  im sisc_im (pc_out,                   // instruction memory
           read_data);
 
   ir sisc_ir (clk,                         // instruction register
@@ -107,13 +107,13 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
     // updated monitor statement to include signals ALU_OP, BR_SEL, PC_WRITE, and PC_SEL defined in project directions
     $monitor("Time = %0d R1 = %h R2 = %h R3 = %h ALU_OP = %b BR_SEL = %b PC_WRITE = %b PC_SEL = %b",
              $time, 
-             uut.sisc_rf.ram_array[1],                            
-             uut.sisc_rf.ram_array[2],
-             uut.sisc_rf.ram_array[3],
-             uut.sisc_ctrl.alu_op,
-             uut.sisc_ctrl.br_sel,
-             uut.sisc_ctrl.pc_write,
-             uut.sisc_ctrl.pc_sel);
+             sisc_rf.ram_array[1],                            
+             sisc_rf.ram_array[2],
+             sisc_rf.ram_array[3],
+             sisc_ctrl.alu_op,
+             sisc_ctrl.br_sel,
+             sisc_ctrl.pc_write,
+             sisc_ctrl.pc_sel);
   end
 
 endmodule

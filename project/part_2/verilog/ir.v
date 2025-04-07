@@ -34,4 +34,3 @@ module ir (clk, ir_load, read_data, instr);
       instr <= read_data;
 
 endmodule
-
