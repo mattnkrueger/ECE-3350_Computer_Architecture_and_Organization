@@ -138,10 +138,11 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
       // determine opcode, check for branches. Output to alu execute stage
       decode:
         begin
-          if (opcode == BRR) // relative 
+          if (opcode == BRR) begin // relative 
             br_sel = 1'b0;
             pc_sel = 1'b1;                  
             pc_write = 1'b1;
+          end
 
           if (opcode == BNR) // relative
             br_sel = 1'b0;
