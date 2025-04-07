@@ -20,7 +20,20 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
   wire [31:0] regb;                   // register b into alu
   wire [31:0] wr_dat;                 // data to write back into register file
   wire [31:0] alu_out;                // alu output from operation 
-  
+
+  // additional connections for part 2
+  wire ir_load;
+  wire br_sel;
+  wire pc_rst;
+  wire pc_sel;
+  wire pc_write;
+
+  wire [31:0] instr;
+  wire [31:0] read_addr;
+  wire [31:0] read_data;
+  wire [31:0] pc_out;
+  wire [31:0] br_addr;
+
   // Component Initialization
   im u10 (read_addr,                   // instruction memory
           read_data);
@@ -46,9 +59,9 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
   // control unit outputs signals that affect downstream components
 
   rf u2 (clk,                         // register file
-         ir[19:16],                   // read rega
-         ir[15:12],                   // read regb
-         ir[23:20],                   // write reg
+         instr[19:16],                   // read rega
+         instr[15:12],                   // read regb
+         instr[23:20],                   // write reg
          wr_dat,
          rf_we,
          rega,
@@ -57,10 +70,10 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
   alu u3 (clk,                        // alu
           rega,
           regb,
-          ir[15:0],                   // immediate value
+          instr[15:0],                   // immediate value
           stat[3],
           alu_op,
-          ir[27:24],                  // function 
+          instr[27:24],                  // function 
           alu_out,
           alu_sts,
           stat_en);
@@ -89,24 +102,21 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
         br_addr);
              
   initial
-  $monitor("time: " $time,
-           "ir: %h\n", ir,                        // %h
-           "ram_array[1]: %h\n", u2.ram_array[1], // %h
-           "ram_array[2]: %h\n", u2.ram_array[2], // %h
-           "ram_array[3]: %h\n", u2.ram_array[3], // %h
-           "ram_array[4]: %h\n", u2.ram_array[4], // %h
-           "ram_array[5]: %h\n", u2.ram_array[5], // %h
-           "alu_op: %h\n", alu_op,                // %h
-           "wb_sel: %b\n", wb_sel,                // %b
-           "rf_we: %b\n", rf_we,                  // %b
-           "wr_dat: %h\n", wr_dat,                // %h
-           "br_sel: %b\n", br_sel,                // %b
-           "pc_rst: %b\n", pc_rst,                // %b
-           "pc_write: %b\n", pc_write,            // %b
-           "pc_sel: %b\n", pc_sel,                // %b
-           "ir_load: %b\n", ir_load,              // %b
-           "instr: %h\n", instr);                 // %h
-
+  $monitor("time: %d\n", $time,                   
+           "instruction: %h\n", instr,            
+           "ram_array[1]: %h\n", u2.ram_array[1],
+           "ram_array[2]: %h\n", u2.ram_array[2],
+           "ram_array[3]: %h\n", u2.ram_array[3],
+           "ram_array[4]: %h\n", u2.ram_array[4],
+           "ram_array[5]: %h\n", u2.ram_array[5],
+           "alu_op: %h\n", alu_op,              
+           "wb_sel: %b\n", wb_sel,             
+           "rf_we: %b\n", rf_we,              
+           "wr_dat: %h\n", wr_dat,           
+           "br_sel: %b\n", br_sel,          
+           "pc_rst: %b\n", pc_rst,         
+           "pc_write: %b\n", pc_write,    
+           "pc_sel: %b\n", pc_sel,       
+           "ir_load: %b\n", ir_load);   
+            
 endmodule
-
-

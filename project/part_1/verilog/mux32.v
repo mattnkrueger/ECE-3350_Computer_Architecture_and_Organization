@@ -18,22 +18,21 @@ module mux32 (in_a, in_b, sel, out);
    *
    */
 
-  input [31:0] in_a;                          // data a (0). this is used as a bitbucket if no data is to be written back (rf_we should also be disabled unless, clear command (maybe??)). 
-  input [31:0] in_b;                          // data b (output of alu)
-  input sel;                                  // select signal to select either 0 or data to write back. Note that register file write_reg determines the address to be written to. 
+  input  [31:0] in_a;
+  input  [31:0] in_b;
+  input         sel;
+  output [31:0] out;
 
-  reg   [31:0] outreg;                        // store the output data n register
-
-  output [31:0] out;                          // output of mux32 to be written back into the register file
+  reg   [31:0] outreg;
    
   always @ (in_a, in_b, sel)
   begin
-    if (sel == 1'b0)                          // if select is 0, select 0
+    if (sel == 1'b0)
       outreg = in_a;
     else
-      outreg = in_b;                          // if select is 1, select data from alu output
+      outreg = in_b;
   end
 
-  assign out = outreg;                        // writeback
+  assign out = outreg;
 
 endmodule

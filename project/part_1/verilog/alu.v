@@ -69,113 +69,72 @@ module alu (clk, rsa, rsb, imm, c_in, alu_op, funct, alu_result, stat, stat_en);
    *        status register is updated.
    */
   
-  input clk;                                  // system clock
-  input c_in;                                 // carry in
-  input [31:0] rsa;                           // register a from register file
-  input [31:0] rsb;                           // register b from register file
-  input [15:0] imm;                           // immediate (16 bits) from instruction. this will be sign extended
-  input [3:0] alu_op;                         // alu operation from the control unit
-  input [3:0] funct;                          // function to be performed. This is contained in the instruction 
-
-  wire [31:0] imm_ext;                        // sign extended immediate to feed into the alu
-  wire [31:0] opb;                            // operand b from rsb
-  wire [3:0] stat_en;                         // status register enable signal 
-  wire [3:0] stat;                            // status register
-  wire fsb;                                   // boolean for whether function is subtraction
-
-  reg [3:0] sts_upd;                          // status register update
-  reg [32:0] add_out;                         // alu output for adder / subtractor (32 BITS! for carry output)
-  reg [31:0] log_out;                         // alu output for logical (AND, OR, XOR, NOT)
-  reg [31:0] shf_out;                         // alu output for shifts
-  reg [31:0] alu_out;                         // general alu output (from any)
-  reg [31:0] reg_rot;                         // temporary register used for rotation operation
-  reg [31:0] alu_result;                      // general result of alu
-  reg t;                                      // temp
-  reg ca;                                     // carry flag for add operation
-  reg cs;                                     // carry flag for shift operation
-  reg ct;                                     // carry flag for temp used in rotation operation
-
-  output [31:0] alu_result;                   // output the general result
-  output [3:0] stat;                          // status output
-  output [3:0] stat_en;                       // status enable output
-
-  integer i;                                  // loop variable
+  input   clk, c_in;
+  input   [31:0] rsa;
+  input   [31:0] rsb;
+  input   [15:0] imm;
+  input   [3:0]  alu_op, funct;
+  output  [31:0] alu_result;
+  output  [3:0]  stat, stat_en;
+ 
+  wire [3:0]  stat;
+  reg  [3:0]  sts_upd;
+  reg  [32:0] add_out;
+  reg  [31:0] log_out;
+  reg  [31:0] shf_out;
+  reg  [31:0] alu_out;
+  reg  [31:0] reg_rot;
+  reg  [31:0] alu_result;
+  wire [31:0] imm_ext, opb;
+  wire [3:0]  stat_en;
+  wire        fsb;
+  reg         t, ca, cs, ct;
+  integer i;
 
   // function codes
-  parameter ADD = 1;                          
-  parameter SUB = 2;
-  parameter ADC = 3;
-  parameter LNOT = 4;
-  parameter LOR = 5;
-  parameter LAND = 6;
-  parameter LXOR = 7;
-  parameter ROR = 8;
-  parameter ROL = 9;
-  parameter SHR = 10;
-  parameter SHL = 11;
-  parameter RRC = 12;
-  parameter RLC = 13;
-  parameter ASR = 14;
-  parameter ASL = 15;
+  parameter ADD = 1,  SUB = 2,  ADC = 3,  LNOT = 4, LOR = 5, LAND = 6, LXOR = 7;
+  parameter ROR = 8,  ROL = 9,  SHR = 10, SHL = 11, RRC = 12, RLC = 13, ASR = 14, ASL = 15;
 
   // sign-extend the immediate value
-  assign imm_ext = (imm[15] == 1'b1) ? {16'hFFFF, imm} : {16'h0000, imm};             // if MSB 1 -> extend to 32 bit with 0xFFFF, if MSB 0 -> extend to 32 bit with 0x0000
-  assign opb = (alu_op[3:1] == 3'b001) ? imm_ext : rsb;                               // if alu operation is 001 then immediate is used. if alu is something else, then the register b value is used
+  assign imm_ext = (imm[15] == 1'b1) ? {16'hFFFF, imm} : {16'h0000, imm};
+  assign opb = (alu_op[3:1] == 3'b001) ? imm_ext : rsb;
 
   // adder
-  // inputs:
-  //    rsa
-  //    opb 
-  //    imm_ext
-  //    c_in
-  //    funct - add (i, c, normal), sub (i, c, normal)
-  //    alu_op
   always @ (rsa, opb, imm_ext, c_in, funct, alu_op)
   begin
-    add_out = 33'h000000000;                                // initialize output to s: 0x0000 and c: 1'b0
-
+    add_out = 33'h000000000;
     case (alu_op[3:1])
-      3'b000, 3'b001: 
-      begin
-        if (funct == ADD)                                   // add
+      3'b000,
+      3'b001: begin
+        if (funct == ADD)
           add_out = rsa + opb;
-        else if (funct == SUB)                              // subtract
+        else if (funct == SUB)
           add_out = rsa - opb;
-        else if (funct == ADC)                              // add with carry
+        else if (funct == ADC)
           add_out = rsa + opb + c_in;
         ca = add_out[32];
       end
-
-      3'b010: 
-      begin
-        add_out = rsa + imm_ext;                            // add with immediate
+      3'b010: begin
+        add_out = rsa + imm_ext;
         ca = add_out[32];
       end
-      
       3'b011: begin
-        add_out = rsa - imm_ext;                            // sub with immediate
+        add_out = rsa - imm_ext;
         ca = add_out[32];
       end
-
-      3'b100:                                               // increment
-      begin
+      3'b100: begin
         add_out = rsa + 32'h00000001;
         ca = add_out[32];
       end
-
-      3'b101:                                               // decrement
-      begin
-        add_out = rsa - 32'h00000001;                       
+      3'b101: begin
+        add_out = rsa - 32'h00000001;
         ca = add_out[32];
       end
-
-      3'b110:                                               // selects a
-      begin
+      3'b110: begin
         add_out = rsa;
         ca = 1'b0;
       end
-      3'b111:                                               // selects b
-      begin
+      3'b111: begin
         add_out = opb;
         ca = 1'b0;
       end
@@ -183,54 +142,39 @@ module alu (clk, rsa, rsb, imm, c_in, alu_op, funct, alu_result, stat, stat_en);
   end
   
   // logic  
-  // inputs:
-  //    rsa
-  //    opb
-  //    funct
   always @ (rsa, opb, funct) begin
-    log_out = 32'h00000000;                                 
-
+    log_out = 32'h00000000;
     case (funct[1:0])
-      2'b00:    log_out = ~rsa;                             // NOT
-      2'b01:    log_out = rsa | opb;                        // OR
-      2'b10:    log_out = rsa & opb;                        // AND
-      2'b11:    log_out = rsa ^ opb;                        // XOR
+      2'b00:    log_out = ~rsa;
+      2'b01:    log_out = rsa | opb;
+      2'b10:    log_out = rsa & opb;
+      2'b11:    log_out = rsa ^ opb;
     endcase
   end
 
   // shifter
   always @ (rsa, opb, c_in, funct) begin
     shf_out = 32'h00000000;
-
-    ct = 1'b0;                                              // temp set to 0
-    cs = 1'b0;                                              // shift carry set to 0
+    ct = 1'b0;
+    cs = 1'b0;
     case (funct)
-      SHR: 
-      begin                                                 // logical shift right
+      SHR: begin                   // logical shift right
         cs = rsa[0];
         shf_out = rsa >> opb[4:0]; 
       end 
-
-      SHL: 
-      begin                                                 // logical shift left
+      SHL: begin                   // logical shift left
         cs = rsa[31];
         shf_out = rsa << opb[4:0];  
       end
-
-      ASR:                                                  // arithmetic shift right (signed)
-      begin                                            
+      ASR: begin                   // arith shift right
         cs = rsa[0];
         shf_out = rsa >>> opb[4:0]; 
       end 
-
-      ASL:                                                  // arithmetic shift left (signed)
-      begin                                            
+      ASL: begin                   // arith shift left
         cs = rsa[31];
         shf_out = rsa <<< opb[4:0];  
       end
-
-      ROR:                                                  // rotate right
-      begin                   
+      ROR: begin                   // rotate right
         reg_rot = rsa;
         for (i = 0; i < opb[4:0]; i = i + 1) begin
           t = reg_rot[0];
@@ -281,18 +225,12 @@ module alu (clk, rsa, rsb, imm, c_in, alu_op, funct, alu_result, stat, stat_en);
     endcase    
   end
       
-  // output mux - THIS IS NOT THE MUX32. Rather, instead of determining the writeback data, it outputs to the general alu_out and selects the status register bits
-  // inputs:
-  //    add_out
-  //    log_out
-  //    shf_out
-  //    funct
-  //    alu_op
+  // output mux
   always @ (add_out, log_out, shf_out, funct, alu_op)
   begin
     if ((alu_op[3:1] != 3'b000) && (alu_op[3:1] != 3'b001))
     begin
-      alu_out = add_out[31:0];   
+      alu_out = add_out[31:0];
       sts_upd = 4'b1011;
     end
     else
@@ -318,25 +256,21 @@ module alu (clk, rsa, rsb, imm, c_in, alu_op, funct, alu_result, stat, stat_en);
     end  
   end    
 
-  // output of the alu
   always @(posedge clk)
     alu_result <= alu_out;
 
   // status code generation 
+  // 3 = Carry; 2 = oVerflow; 1 = Negative; 0 = Zero
   // Assume signed operands
-  // 3 = (C)arry
-  // 2 = o(V)erflow
-  // 1 = (N)egative
-  // 0 = (Z)ero
 
-  assign fsb = (funct == SUB) ? 1'b1 : 1'b0;                                          // assign subract
+  assign fsb = (funct == SUB) ? 1'b1 : 1'b0;
 
-  assign stat[3] = (funct[3] == 1'b0) ? ca : cs;                                      // (C): select additon or shift carry
-  assign stat[2] = (~(fsb ^ rsa[31] ^ opb[31])) & (fsb ^ opb[31] ^ add_out[31]);      // (V): determines subtraction demorgan xor stmt and addition xor stmt
-  assign stat[1] = alu_out[31];                                                       // (N): MSB of output operation (we assumed these are signed bits)
-  assign stat[0] = ~|alu_out[31:0];                                                   // (Z): reduction or -> returns 1 if any bit is 1. If all bits are 0, then 0. Then, negate the result. This makes sense because it is only (Z) if all 0.
+  assign stat[3] = (funct[3] == 1'b0) ? ca : cs;
+  assign stat[2] = (~(fsb ^ rsa[31] ^ opb[31])) & (fsb ^ opb[31] ^ add_out[31]);
+  assign stat[1] = alu_out[31];
+  assign stat[0] = ~|alu_out[31:0];
 
   // status register enable
-  assign stat_en = (alu_op[0] == 1'b1) ? sts_upd : 4'b0000;                           // if LSB of opcode is 0, then status flags should be update. if 1, then leave as is. 
+  assign stat_en = (alu_op[0] == 1'b1) ? sts_upd : 4'b0000;
 
 endmodule

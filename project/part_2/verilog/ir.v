@@ -18,17 +18,12 @@ module ir (clk, ir_load, read_data, instr);
    *
    */
   
-  input clk;                      // system clock
-  input ir_load;                  // instruction load signal. if ir_load == 1 ? load : dont load
-  input [31:0] read_data;         // contents of the current instruction
-
-  wire clk;                       
-  wire ir_load;                   
-  wire [31:0] read_data;
-
+  input         clk;
+  input         ir_load;
+  input  [31:0] read_data;
+  output [31:0] instr;
+ 
   reg [31:0] instr;
-  output [31:0] instr;            // output of the contents of the current instruction
-
  
   // instruction register
   initial
@@ -39,3 +34,4 @@ module ir (clk, ir_load, read_data, instr);
       instr <= read_data;
 
 endmodule
+

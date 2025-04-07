@@ -27,30 +27,29 @@ module rf (clk, read_rega, read_regb, write_reg, write_data, rf_we, rsa, rsb);
    *
    */
 
-  input  clk;                                   // clock signal
-  input  [3:0]  read_rega;                      // address in memory to read into register a
-  input  [3:0]  read_regb;                      // address in memory to read into register b
-  input  [3:0]  write_reg;                      // address in memory to write register contents to 
-  input  [31:0] write_data;                     // data to write to register contents
-  input  rf_we;                                 // register file writeback enable signal
+  input  clk;
+  input  [3:0]  read_rega;
+  input  [3:0]  read_regb;
+  input  [3:0]  write_reg;
+  input  [31:0] write_data;
+  input  rf_we;
   
-  output [31:0] rsa;                            // register a output from register file
-  output [31:0] rsb;                            // register b output from register file
+  output [31:0] rsa;
+  output [31:0] rsb;
   
-  reg    [31:0] ram_array [15:0];               // simulated ram - we have 5 registers in array, each 4 bits. (total 16 bits)
-  reg    [31:0] rsa;                            // register a from register file
-  reg    [31:0] rsb;                            // register b from register file
+  reg    [31:0] ram_array [15:0];
+  reg    [31:0] rsa;
+  reg    [31:0] rsb;
 
   integer i; 
-
-  // clear contents in all registers
+  // initialize register file to 0
   initial
   begin
      for (i = 0; i < 16; i = i + 1) begin
        ram_array[i] <= 32'H00000000;
 	 end
-     rsa <= 32'H00000000;                       // additionally clear the outputs to alu
-     rsb <= 32'H00000000;                       // additionally clear the outputs to alu
+     rsa <= 32'H00000000;
+     rsb <= 32'H00000000;
   end
 
   // read process is sensitive to read address.
@@ -58,25 +57,24 @@ module rf (clk, read_rega, read_regb, write_reg, write_data, rf_we, rsa, rsb);
   always @(posedge clk)
   begin
     if (read_rega == 4'H0)
-      rsa <= 32'H00000000;                      // r0 is used as a bitbucket in mips risc. anything written to it will be discarded using this codeblock. This is different than our atmega328p in embedded systems where r0 is just another gpr   
+      rsa <= 32'H00000000;
     else
-      rsa <= ram_array[read_rega];              // r1..5 to be accessed
+      rsa <= ram_array[read_rega];
   end
 
-  // same for rsb. if this is 0, return 0
   always @(posedge clk)
   begin
     if (read_regb == 4'H0)
       rsb <= 32'H00000000;
     else    
-      rsb <= ram_array[read_regb];              // r1..5 to be accessed
+      rsb <= ram_array[read_regb];
   end
 
   // write process is sensitive to write enable
   always @(posedge clk)
   begin
     if (rf_we == 1'b1)
-      ram_array[write_reg] <= write_data;       // only write to register in ram array if the rf_we is enabled
+      ram_array[write_reg] <= write_data;
   end
   
 endmodule

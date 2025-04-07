@@ -69,58 +69,35 @@ module alu (clk, rsa, rsb, imm, c_in, alu_op, funct, alu_result, stat, stat_en);
    *        status register is updated.
    */
   
-  input clk;                                  // system clock
-  input c_in;                                 // carry in
-  input [31:0] rsa;                           // register a from register file
-  input [31:0] rsb;                           // register b from register file
-  input [15:0] imm;                           // immediate (16 bits) from instruction. this will be sign extended
-  input [3:0] alu_op;                         // alu operation from the control unit
-  input [3:0] funct;                          // function to be performed. This is contained in the instruction 
-
-  wire [31:0] imm_ext;                        // sign extended immediate to feed into the alu
-  wire [31:0] opb;                            // operand b from rsb
-  wire [3:0] stat_en;                         // status register enable signal 
-  wire [3:0] stat;                            // status register
-  wire fsb;                                   // boolean for whether function is subtraction
-
-  reg [3:0] sts_upd;                          // status register update
-  reg [32:0] add_out;                         // alu output for adder / subtractor (32 BITS! for carry output)
-  reg [31:0] log_out;                         // alu output for logical (AND, OR, XOR, NOT)
-  reg [31:0] shf_out;                         // alu output for shifts
-  reg [31:0] alu_out;                         // general alu output (from any)
-  reg [31:0] reg_rot;                         // temporary register used for rotation operation
-  reg [31:0] alu_result;                      // general result of alu
-  reg t;                                      // temp
-  reg ca;                                     // carry flag for add operation
-  reg cs;                                     // carry flag for shift operation
-  reg ct;                                     // carry flag for temp used in rotation operation
-
-  output [31:0] alu_result;                   // output the general result
-  output [3:0] stat;                          // status output
-  output [3:0] stat_en;                       // status enable output
-
-  integer i;                                  // loop variable
+  input   clk, c_in;
+  input   [31:0] rsa;
+  input   [31:0] rsb;
+  input   [15:0] imm;
+  input   [3:0]  alu_op, funct;
+  output  [31:0] alu_result;
+  output  [3:0]  stat, stat_en;
+ 
+  wire [3:0]  stat;
+  reg  [3:0]  sts_upd;
+  reg  [32:0] add_out;
+  reg  [31:0] log_out;
+  reg  [31:0] shf_out;
+  reg  [31:0] alu_out;
+  reg  [31:0] reg_rot;
+  reg  [31:0] alu_result;
+  wire [31:0] imm_ext, opb;
+  wire [3:0]  stat_en;
+  wire        fsb;
+  reg         t, ca, cs, ct;
+  integer i;
 
   // function codes
-  parameter ADD = 1;                          
-  parameter SUB = 2;
-  parameter ADC = 3;
-  parameter LNOT = 4;
-  parameter LOR = 5;
-  parameter LAND = 6;
-  parameter LXOR = 7;
-  parameter ROR = 8;
-  parameter ROL = 9;
-  parameter SHR = 10;
-  parameter SHL = 11;
-  parameter RRC = 12;
-  parameter RLC = 13;
-  parameter ASR = 14;
-  parameter ASL = 15;
+  parameter ADD = 1,  SUB = 2,  ADC = 3,  LNOT = 4, LOR = 5, LAND = 6, LXOR = 7;
+  parameter ROR = 8,  ROL = 9,  SHR = 10, SHL = 11, RRC = 12, RLC = 13, ASR = 14, ASL = 15;
 
   // sign-extend the immediate value
-  assign imm_ext = (imm[15] == 1'b1) ? {16'hFFFF, imm} : {16'h0000, imm};             // if MSB 1 -> extend to 32 bit with 0xFFFF, if MSB 0 -> extend to 32 bit with 0x0000
-  assign opb = (alu_op[3:1] == 3'b001) ? imm_ext : rsb;                               // if alu operation is 001 then immediate is used. if alu is something else, then the register b value is used
+  assign imm_ext = (imm[15] == 1'b1) ? {16'hFFFF, imm} : {16'h0000, imm};
+  assign opb = (alu_op[3:1] == 3'b001) ? imm_ext : rsb;
 
   // adder
   // inputs:

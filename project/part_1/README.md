@@ -50,6 +50,9 @@ Here are some notes taken in preparation for the project
 - ALU_OP, WB_SEL, RF_WE
 - write_data input of the RF module
 
+## IR Waveform on Modelsim
+![waveform](../part_1/img/ir_waveform.png)
+
 ## Part 1 Completed Project Files
 Grade received: 76/76
 - [alu.v](alu.v)
