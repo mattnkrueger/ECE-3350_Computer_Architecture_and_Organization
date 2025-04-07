@@ -21,7 +21,7 @@ module sisc_tb;
   always
   begin
     #(tclk/2.0);                    // delay half period
-    clk = ~clk;                     // invert clock
+    clk = ~clk;                     // invert clock        ... i guess these are fine as blocking assignments as it is just the generator... anything affected by this clock downstream should be non-blocking
   end
  
   // reset control
@@ -39,17 +39,9 @@ module sisc_tb;
   // instruction sourced from the im module. Note that ctrl unit determines the
   // memory location sourced (see ctrl.v and imem.data) for more details.
 
-  // Monitor important signals
-  initial
-  begin
-    // updated monitor statement to include signals ALU_OP, BR_SEL, PC_WRITE, and PC_SEL defined in project directions
-    $monitor("Time = %0d R1 = %h R2 = %h R3 = %h",
-             $time, 
-             uut.sisc_rf.ram_array[1],                            
-             uut.sisc_rf.ram_array[2],
-             uut.sisc_rf.ram_array[3],
-             );
-  end
+  // --- also ---
+  // see sisc.v for monitor statements. i have removed redundant monitoring statements in this file. 
+  // "... your submitted *sisc.v* should monitor the following signals: ..."
 
 endmodule
 

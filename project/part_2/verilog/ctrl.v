@@ -15,7 +15,7 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
   input clk;                                        // clock signal
   input rst_f;                                      // reset signal
   input [3:0] opcode;                               // opcode from the instruction register
-  input [3:0] mm;                                   // memory mode from the instruction register
+  input [3:0] mm;                                   // memory address from the instruction register. used for branch absolute
   input [3:0] stat;                                 // status register CCs
 
   output reg rf_we;                                 // register file writeback enable signal
@@ -37,7 +37,7 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
   parameter mem       = 5;                          // (M)emory
   parameter writeback = 6;                          // (W)riteback
 
-  // please see imem for program instructions
+  // opcode values (aligns with what is in imem.data)
   parameter NOOP   = 0;
   parameter REG_OP = 1;
   parameter REG_IM = 2;     
@@ -63,7 +63,7 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
     present_state = start0;
 
   // check for resets. If reset, set state to 1
-  always @(posedge clk, negedge rst_f)
+  always @(posedge clk, negedge rst_f)              // SEQUENTIAL -> non blocking
   begin
     if (rst_f == 1'b0)
       present_state <= start1;
@@ -72,7 +72,7 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
   end
 
   // determine next state
-  always @(present_state, rst_f)
+  always @(present_state, rst_f)                   // COMBINATIONAL -> blocking   
   begin
     case(present_state)
       start0:
@@ -108,7 +108,7 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
   end
 
   // non starting states - 5 stage pipeline of sisc machine 
-  always @(present_state, opcode)
+  always @(*)               // COMBINATIONAL -> blocking. also swithing sensitivity list to * to include all inputs (considered best practice in industry)
   begin
 
     // default signals subject to change during current pipeline stage
@@ -135,35 +135,69 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
         end
 
       // 2. (D)ecode
-      // determine opcode, check for branches. Output to alu execute stage
+      // determine opcode, check for branches based on status register. Output to alu execute stage
       decode:
         begin
-          if (opcode == BRR) begin // relative 
-            br_sel = 1'b0;
-            pc_sel = 1'b1;                  
-            pc_write = 1'b1;
-          end
+          // default signals
+          br_sel = 1'b0;
+          pc_sel = 1'b0;
+          pc_write = 1'b1;  // default to write the prev incremented pc
 
-          if (opcode == BNR) // relative
-            br_sel = 1'b0;
-            pc_sel = 1'b1;                  
-            pc_write = 1'b1;
+          case(opcode)
+            BRR: // Branch if register equals zero
+            begin 
+              if (stat[0] == 1'b1)              // if z flag is set, then branch
+              begin 
+                br_sel   = 1'b0;                // relative
+                pc_sel   = 1'b1;
+                pc_write = 1'b1;
+              end
+            end
+            
+            BNR: // Branch if register not equals zero
+            begin 
+              if (stat[0] == 1'b0)              // if z flag is not set, then branch
+              begin 
+                br_sel   = 1'b0;                // relative     
+                pc_sel   = 1'b1;  
+                pc_write = 1'b1;  
+              end
+            end
+            
+            BNE: // Branch not equal (unconditional or conditional) absolute 
+            begin 
+              
+              if (mm == 4'h0 || (mm == 4'h1 && stat[0] == 1'b0))  // if mm = 0 (see imem.data) which declares unconditional branch, or if mm = 1 (which declares conditional branch) and z flag is not set. NOT EQUAL TO ZERO
+                begin 
+                  br_sel = 1'b1;                // absolute
+                  pc_sel = 1'b1;   
+                  pc_write = 1'b1;
+                end
+            end
 
-          if (opcode == BNE) // absolute
-            br_sel = 1'b1;
-            pc_sel = 1'b1;                  
-            pc_write = 1'b1;
+            default:
+            begin
+              br_sel = 1'b0;
+              pc_sel = 1'b0;
+              pc_write = 1'b1;
+            end
+          endcase
         end
 
       // 3. (C)ompute
       execute:                 
         begin
           if (opcode == REG_OP)
-            alu_op = 4'b0001;               
-          if (opcode == REG_IM)
-            alu_op = 4'b0011;                
+            begin
+              alu_op = 4'b0001;               
+            end
 
-          // whats current should be sufficient
+          if (opcode == REG_IM)
+            begin
+              alu_op = 4'b0011;                
+            end
+
+          // what was in part 1should be sufficient; this handles the two types of call formats. All that was needed for part 2 was branching logic & additional signals
           // dont do anything for branching. the changes should take effect on the next load. ALU not required.
         end
 
@@ -171,29 +205,36 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
       mem:                    
         begin
           if (opcode == REG_OP)
-            alu_op = 4'b0000;                 
+            begin
+              alu_op = 4'b0000;                 
+            end
+
           if (opcode == REG_IM)
-            alu_op = 4'b0010;                 
+            begin
+              alu_op = 4'b0010;                 
+            end
         end
 
       // 5. (W)riteback
       writeback:             
         begin
           if (opcode == REG_OP || opcode == REG_IM)
-            rf_we  = 1'b1;
+            begin
+              rf_we  = 1'b1;
+            end
         end
 
-      // otherwise (no op)
+      // otherwise
       default:      
         begin
-          rf_we   = 1'b0;                     
-          wb_sel  = 1'b0;                      
-          alu_op  = 4'b0000;                    
-          br_sel  = 1'b0;                        
-          pc_rst  = 1'b0;                         
-          pc_sel  = 1'b0;                          
+          rf_we    = 1'b0;                     
+          wb_sel   = 1'b0;                      
+          alu_op   = 4'b0000;                    
+          br_sel   = 1'b0;                        
+          pc_rst   = 1'b0;                         
+          pc_sel   = 1'b0;                          
           pc_write = 1'b0;                          
-          ir_load = 1'b0;                          
+          ir_load  = 1'b0;                          
         end
       
     endcase

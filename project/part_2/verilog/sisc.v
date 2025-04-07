@@ -36,18 +36,11 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
   wire [15:0] imm;
 
   // Component Initialization
-  im sisc_im (read_addr,                   // instruction memory
-          read_data);
-
-  ir sisc_ir (clk,                         // instruction register
-        ir_load,
-        read_data, 
-        instr);
-
+  // purely structual verilog, so all of this is happening concurrently... no ordering of modules required
   ctrl sisc_ctrl (clk,                       // control unit
            rst_f,
            instr[31:28],              // opcode
-           instr[27:24],              // mm (funct for alu)
+           instr[27:24],              // mm (funct for alu) also used for branching ; ex if 0 for bne unconditional branch, if 1 check for z in prev alu stage
            stat,
            rf_we,
            alu_op,
@@ -57,7 +50,6 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
            pc_write,
            pc_sel,
            ir_load); 
-  // control unit outputs signals that affect downstream components
 
   rf sisc_rf (clk,                         // register file
          instr[19:16],                   // read rega
@@ -74,7 +66,7 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
           instr[15:0],                   // immediate value
           stat[3],
           alu_op,
-          instr[27:24],                  // function 
+          instr[27:24],                  // function (memory mode for branching in ctrl)
           alu_out,
           alu_sts,
           stat_en);
@@ -96,24 +88,32 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
         pc_rst,
         pc_out);
 
-  assign read_addr = {16'h0000, pc_out}; // Connect PC to memory address
-  assign imm = instr[15:0]; // Extract immediate field
-
   br sisc_br (pc_out,                      // branch calculator
         imm,
         br_sel,
         br_addr);
+
+  im sisc_im (read_addr,                   // instruction memory
+          read_data);
+
+  ir sisc_ir (clk,                         // instruction register
+        ir_load,
+        read_data, 
+        instr);
              
+  // Monitor important signals
   initial
-  $monitor("time: %d\n", $time,                   
-           "instruction: %h\n", instr,            
-           "PC: %h\n", pc_out,
-           "R1: %h\n", sisc_rf.ram_array[1],
-           "R2: %h\n", sisc_rf.ram_array[2],
-           "R3: %h\n", sisc_rf.ram_array[3],
-           "ALU_OP: %h\n", alu_op,              
-           "BR_SEL: %b\n", br_sel,          
-           "PC_WRITE: %b\n", pc_write,    
-           "PC_SEL: %b\n", pc_sel);   
-            
+  begin
+    // updated monitor statement to include signals ALU_OP, BR_SEL, PC_WRITE, and PC_SEL defined in project directions
+    $monitor("Time = %0d R1 = %h R2 = %h R3 = %h ALU_OP = %b BR_SEL = %b PC_WRITE = %b PC_SEL = %b",
+             $time, 
+             uut.sisc_rf.ram_array[1],                            
+             uut.sisc_rf.ram_array[2],
+             uut.sisc_rf.ram_array[3],
+             uut.ctrl.alu_op,
+             uut.ctrl.br_sel,
+             uut.ctrl.pc_write,
+             uut.ctrl.pc_sel);
+  end
+
 endmodule
