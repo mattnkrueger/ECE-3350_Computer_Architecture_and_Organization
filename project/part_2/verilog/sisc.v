@@ -1,16 +1,12 @@
 // ECE:3350 SISC processor project
 // main sisc module
 
-// PROJECT PART 2 DIRECTIONS:
-// Modify the sisc module to instantiate and connect the pc, br, ir, and im modules
-
 `timescale 1ns/100ps  
 
-module sisc (clk, rst_f, ir);
+module sisc (clk, rst_f);             // removed ir as sisc internally should handle memory. There are loops now; the program execution is not sequential
 
   input clk;                          // clock signal
   input rst_f;                        // reset signal
-  input [31:0] ir;                    // instruction register 
 
   wire rf_we;                         // writeback enable signal for register file
   wire wb_sel;                        // writeback select for mux32 (and output from alu)
@@ -26,19 +22,28 @@ module sisc (clk, rst_f, ir);
   wire [31:0] alu_out;                // alu output from operation 
   
   // Component Initialization
+  im u10 (read_addr,                   // instruction memory
+          read_data);
+
+  ir u9 (clk,                         // instruction register
+        ir_load,
+        read_data, 
+        instr);
+
   ctrl u1 (clk,                       // control unit
            rst_f,
-           ir[31:28],
-           ir[27:24],
+           instr[31:28],              // opcode
+           instr[27:24],              // mm
            stat,
            rf_we,
            alu_op,
            wb_sel, 
-           br_sel,                    // part 2 extension of ctrl unit
-           pc_rst,                    // these are simply ctrl signals 1 bit.
+           br_sel,                    
+           pc_rst,                    
            pc_write,
            pc_sel,
            ir_load); 
+  // control unit outputs signals that affect downstream components
 
   rf u2 (clk,                         // register file
          ir[19:16],
@@ -52,10 +57,10 @@ module sisc (clk, rst_f, ir);
   alu u3 (clk,                        // alu
           rega,
           regb,
-          ir[15:0],
+          ir[15:0],                   // immediate value
           stat[3],
           alu_op,
-          ir[27:24],
+          ir[27:24],                  // function 
           alu_out,
           alu_sts,
           stat_en);
@@ -77,18 +82,11 @@ module sisc (clk, rst_f, ir);
         pc_rst,
         pc_out);
 
-  ir u8 (clk,                         // instruction register
-        ir_load,
-        read_data, 
-        instr);
 
-  br u9 (pc_out,                      // branch calculator
+  br u8 (pc_out,                      // branch calculator
         imm,
         br_sel,
         br_addr);
-   
-   im u10 (read_addr,                 // instruction memory
-          read_data);
              
   initial
   $monitor("time: " $time,

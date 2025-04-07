@@ -11,13 +11,12 @@
 
 `timescale 1ns/100ps
 
-module ctrl (clk, rst_f, opcode, mm, stat, instr, rf_we, alu_op, wb_sel, br_sel, pc_rst, pc_write, pc_sel, ir_load);
+module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst, pc_write, pc_sel, ir_load);
   input clk;                                        // clock signal
   input rst_f;                                      // reset signal
   input [3:0] opcode;                               // opcode from the instruction register
   input [3:0] mm;                                   // memory mode from the instruction register
   input [3:0] stat;                                 // status register CCs
-  input [31:0] instr;                               // current instruction from the im
 
   output reg rf_we;                                 // register file writeback enable signal
   output reg wb_sel;                                // writeback select signal
@@ -151,9 +150,13 @@ module ctrl (clk, rst_f, opcode, mm, stat, instr, rf_we, alu_op, wb_sel, br_sel,
       // otherwise
       default:      
         begin
-          rf_we  = 1'b0;
-          wb_sel = 1'b0;
-          alu_op = 4'b0000;
+            rf_we  = 1'b0;                          
+            wb_sel = 1'b0;                         
+            alu_op = 4'b0000;                     
+            br_sel = 1'b0;                       
+            pc_rst = 1'b0;                      
+            pc_sel = 1'b0;                     
+            ir_load = 1'b0;                   
         end
       
     endcase
