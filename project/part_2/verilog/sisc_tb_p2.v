@@ -2,7 +2,7 @@
 
 `timescale 1ns/100ps                    // 1ns per clock. simulation 100ps divisions
 
-module sisc_tb;
+module sisc_tb_p2;
 
   parameter tclk = 10.0;                // period 10ns
 

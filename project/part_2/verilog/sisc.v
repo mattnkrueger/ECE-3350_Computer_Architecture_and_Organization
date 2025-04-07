@@ -29,7 +29,7 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
   wire pc_write;
 
   wire [31:0] instr;
-  wire [31:0] read_addr;
+  wire [15:0] read_addr;
   wire [31:0] read_data;
   wire [15:0] pc_out;
   wire [15:0] br_addr;
@@ -110,10 +110,10 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
              uut.sisc_rf.ram_array[1],                            
              uut.sisc_rf.ram_array[2],
              uut.sisc_rf.ram_array[3],
-             uut.ctrl.alu_op,
-             uut.ctrl.br_sel,
-             uut.ctrl.pc_write,
-             uut.ctrl.pc_sel);
+             uut.sisc_ctrl.alu_op,
+             uut.sisc_ctrl.br_sel,
+             uut.sisc_ctrl.pc_write,
+             uut.sisc_ctrl.pc_sel);
   end
 
 endmodule
