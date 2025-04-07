@@ -36,6 +36,23 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
   parameter execute   = 4;                          // (C)ompute
   parameter mem       = 5;                          // (M)emory
   parameter writeback = 6;                          // (W)riteback
+
+  // please see imem for program instructions
+  parameter NOOP   = 0;
+  parameter REG_OP = 1;
+  parameter REG_IM = 2;     
+  parameter SWAP   = 3;   // not implemented
+  parameter BRA    = 4;   // not implemented
+  parameter BRR    = 5;
+  parameter BNE    = 6;
+  parameter BNR    = 7;
+  parameter JPA    = 8;   // not implemented
+  parameter JPR    = 9;   // not implemented
+  parameter LOD    = 10;  // not implemented
+  parameter STR    = 11;  // not implemented
+  parameter CALL   = 12;  // not implemented
+  parameter RET    = 13;  // not implemented
+  parameter HLT    = 15;
    
   // state registers
   reg [2:0] present_state;
@@ -95,31 +112,46 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
   begin
 
     // default signals subject to change during current pipeline stage
-    rf_we  = 1'b0;                          // set rf_we to 0 (no writebacks)
-    wb_sel = 1'b0;                          // set select to 0 (select 0)
-    alu_op = 4'b0000;                       // set opcode to nop 
-    br_sel = 1'b0;                          // no branch selected; normal operation
-    pc_rst = 1'b0;                          // no reset of pc; normal operation
-    pc_sel = 1'b0;                          // normal increment of pc
-    ir_load = 1'b0;                         // do not load ir. this is only done inside of the fetch state.
+    rf_we   = 1'b0;                     
+    wb_sel  = 1'b0;                      
+    alu_op  = 4'b0000;                    
+
+    // additional for part 2
+    br_sel   = 1'b0;          // if 1 -> absolute, 0 -> offset             
+    pc_rst   = 1'b0;          // if 1 -> reset,    0 -> continue
+    pc_sel   = 1'b0;          // if 1 -> branch,   0 -> increment pc
+    pc_write = 1'b0;          // if 1 -> save,     0 -> do not save
+    ir_load  = 1'b0;          // if 1 -> load ir,  0 -> do not load                
         
     case(present_state)
 
       // 1. (F)etch
-        fetch:
+      // load ir from memory, increment pc
+      fetch:
         begin
-          ir_load = 1'b1;                     // load the next instruction; testbench should handle program simulation 
-          pc_sel = 1'b0;                      // increment program counter; saves PC+1 to the program counter
+          ir_load  = 1'b1;                    // load 
+          pc_sel   = 1'b0;                   // increment
+          pc_write = 1'b1;                   // save 
         end
 
       // 2. (D)ecode
+      // determine opcode, check for branches. Output to alu execute stage
       decode:
         begin
-          // determine whether branch signals are to be used. 
-          if (opcode == )
-          
+          if (opcode == BRR) // relative 
+            br_sel = 1'b0;
+            pc_sel = 1'b1;                  
+            pc_write = 1'b1;
 
-          // need to do something here to include the branching
+          if (opcode == BNR) // relative
+            br_sel = 1'b0;
+            pc_sel = 1'b1;                  
+            pc_write = 1'b1;
+
+          if (opcode == BNE) // absolute
+            br_sel = 1'b1;
+            pc_sel = 1'b1;                  
+            pc_write = 1'b1;
         end
 
       // 3. (C)ompute
@@ -129,6 +161,9 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
             alu_op = 4'b0001;               
           if (opcode == REG_IM)
             alu_op = 4'b0011;                
+
+          // whats current should be sufficient
+          // dont do anything for branching. the changes should take effect on the next load. ALU not required.
         end
 
       // 4. (M)emory
@@ -147,16 +182,17 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
             rf_we  = 1'b1;
         end
 
-      // otherwise
+      // otherwise (no op)
       default:      
         begin
-            rf_we  = 1'b0;                          
-            wb_sel = 1'b0;                         
-            alu_op = 4'b0000;                     
-            br_sel = 1'b0;                       
-            pc_rst = 1'b0;                      
-            pc_sel = 1'b0;                     
-            ir_load = 1'b0;                   
+          rf_we   = 1'b0;                     
+          wb_sel  = 1'b0;                      
+          alu_op  = 4'b0000;                    
+          br_sel  = 1'b0;                        
+          pc_rst  = 1'b0;                         
+          pc_sel  = 1'b0;                          
+          pc_write = 1'b0;                          
+          ir_load = 1'b0;                          
         end
       
     endcase

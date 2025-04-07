@@ -33,7 +33,7 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
   ctrl u1 (clk,                       // control unit
            rst_f,
            instr[31:28],              // opcode
-           instr[27:24],              // mm
+           instr[27:24],              // mm (funct for alu)
            stat,
            rf_we,
            alu_op,
@@ -46,9 +46,9 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
   // control unit outputs signals that affect downstream components
 
   rf u2 (clk,                         // register file
-         ir[19:16],
-         ir[15:12],
-         ir[23:20],
+         ir[19:16],                   // read rega
+         ir[15:12],                   // read regb
+         ir[23:20],                   // write reg
          wr_dat,
          rf_we,
          rega,
@@ -66,7 +66,7 @@ module sisc (clk, rst_f);             // removed ir as sisc internally should ha
           stat_en);
 
   mux32 u5 (alu_out,                  // mux32
-            32'h00000000,
+            32'h00000000,             
             wb_sel,
             wr_dat);
 

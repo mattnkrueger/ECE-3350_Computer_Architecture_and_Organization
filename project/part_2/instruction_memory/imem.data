@@ -24,7 +24,6 @@
 // h. halt
 //     F0000000
 
-
 //                                                                      // FORMAT
 00000000 //00: NOP                                                      // N/A
 21100001 //01: ADI  R1,R0,1      R1 <- R0 + (0x0000)0001                // a 
@@ -42,7 +41,7 @@
 // At this point, registers should be as follows:
 // R1: 00000001		R4: FE000011                                        
 // R2: FF000008		R5: FF000019
-// R3: FE000000		R0, R6-R15: 00000000                                // r0 bitbucket, r6-15 not implemented. also bitbucket
+// R3: FE000000		R0, R6-R15: 00000000                                // r0 bitbucket, r6-15 not implemented
 
 //                                                        STAT: CVNZ    
 21100001 //0C: ADI  R1,R0,1      R1 <- R0 + (0x0000)0001 (STAT: 0000)   // a
@@ -69,4 +68,4 @@ F0000000 //1D: L3: HALT                                        Halt program     
 // At this point, registers should be as follows:
 //   R1: 00000001		R4: 00000006
 //   R2: 00000000		R5: FF000019
-//   R3: 00000000		R0, R6-R15: 00000000
+//   R3: 00000000		R0, R6-R15: 00000000                               
