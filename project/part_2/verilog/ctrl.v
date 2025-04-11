@@ -11,7 +11,7 @@
 
 `timescale 1ns/100ps
 
-module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst, pc_write, pc_sel, ir_load);
+module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst, pc_write, pc_sel, ir_load, mem_we);
   input clk;                                        // clock signal
   input rst_f;                                      // reset signal
   input [3:0] opcode;                               // opcode from the instruction register
@@ -27,6 +27,7 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
   output reg pc_write;
   output reg pc_sel;
   output reg ir_load;
+  output reg mem_we;                                // memory write enable signal
   
   // fsm states
   parameter start0    = 0;
@@ -112,6 +113,7 @@ module ctrl (clk, rst_f, opcode, mm, stat, rf_we, alu_op, wb_sel, br_sel, pc_rst
     rf_we   = 1'b0;                     
     wb_sel  = 1'b0;                      
     alu_op  = 4'b0000;                    
+    mem_we  = 1'b0;                      // default memory write disabled
 
     // additional for part 2
     br_sel   = 1'b0;          // if 1 -> absolute, 0 -> offset             
