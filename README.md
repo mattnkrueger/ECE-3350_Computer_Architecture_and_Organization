@@ -10,8 +10,8 @@ The course follows the [Computer Organization and Embedded Systems (Sixth Editio
 ### Homework
 This section contains all homework assignments and their solutions:
 * [Homework 1](homework/homework_1.pdf) 
-* [Homework 2](homework/homework_2.pdf) 
-* [Homework 3](homework/homework_3/README.md)
+* [Homework 2](homework/homework_2.pdf)
+* [Homework 3](homework/homework_3/README.md) (verilog)
 * [Homework 4](homework/homework_4.pdf)
 * [Homework 5](homework/homework_5.pdf)
 * [Homework 6](homework/homework_6.pdf)
@@ -19,8 +19,12 @@ This section contains all homework assignments and their solutions:
 * [Homework 8](homework/homework_8.pdf)
 * [Homework 9](homework/homework_9.pdf)
 * [Homework 10](homework/homework_10.pdf)
+* [Homework 11](homework/homework_11.pdf)
+* [Homework 12](homework/homework_12.pdf)
+* [Homework 13](homework/homework_13_code/README.md) (C++)
+* [Homework 14](homework/homework_14.pdf) 
 
 ### Project
 * [Project Part 1](project/part_1/README.md) 
 * [Project Part 2](project/part_2/README.md)
-* [Project Part 3](project/part_3/README.md) 
+* [Project Part 3](project/part_3/README.md)
