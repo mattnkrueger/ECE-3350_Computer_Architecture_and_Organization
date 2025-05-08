@@ -1,0 +1,97 @@
+// MULTIPLICATION PROGRAM:
+//
+//                  Multiply two unsigned, 32-bit integers stored in memory and write the resulting 64-bit
+//                  product back to memory. The two integers will be stored in memory locations 0 and 1, and
+//                  the product should be written to locations 2 and 3, such that the most significant bits are at
+//                  address 3. An example data file is provided as mult_data.data. Save this instruction
+//                  memory file as mult_instr.data.
+//
+// REGISTER USAGE:
+// we have 16 registers supported by our SISC machine: R1..7 can be used for simplicity for the multiplication program, which takes two inputs: multiplicand (m) and multiplier (q) to produce product result. To achieve this, we simply keep adding the number repeatedly until the multiplicand - counter == 0. Else increment counter and add multiplier (note this process is communitive and thus m and q can be switched). At a certain point, 0 will be read 
+//
+//                  R1 - multiplicand (shifted left each iteration)
+//                  R2 - multiplier (shifted right each iteration)
+//                  R3 - result low word
+//                  R4 - result high word
+//                  R5 - bit counter
+//                  R6 - constant 1 (for AND and shifts)
+//                  R7 - temporary for comparisons
+//
+//
+// EXAMPLE CALCULATION: 5x4
+// 1. Initialize:
+//    R1 = 5 (multiplicand)
+//    R2 = 4 (multiplier)
+//    R3 = 0 (result low word)
+//    R4 = 0 (result high word)
+//    R5 = 0 (bit counter)
+//    R6 = 1 (constant for AND and shifts)
+//
+// 2. Loop (32 iterations, showing first few):
+//    Iteration 1: (R5 = 0)
+//      - R7 = R2 & 1 = 4 & 1 = 0 (LSB is 0)
+//      - Skip addition (R7 == 0)
+//      - R1 = 5 << 1 = 10 (shift multiplicand left)
+//      - R2 = 4 >> 1 = 2 (shift multiplier right)
+//      - R5 = 0 + 1 = 1
+//
+//    Iteration 2: (R5 = 1)
+//      - R7 = R2 & 1 = 2 & 1 = 0 (LSB is 0)
+//      - Skip addition (R7 == 0)
+//      - R1 = 10 << 1 = 20 (shift multiplicand left)
+//      - R2 = 2 >> 1 = 1 (shift multiplier right)
+//      - R5 = 1 + 1 = 2
+//
+//    Iteration 3: (R5 = 2)
+//      - R7 = R2 & 1 = 1 & 1 = 1 (LSB is 1)
+//      - R3 = 0 + 20 = 20 (add multiplicand to result)
+//      - Check for carry (R3 < R1? No, so no carry)
+//      - R1 = 20 << 1 = 40 (shift multiplicand left)
+//      - R2 = 1 >> 1 = 0 (shift multiplier right)
+//      - R5 = 2 + 1 = 3
+//
+//    Iteration 4: (R5 = 3)
+//      - R7 = R2 & 1 = 0 & 1 = 0 (LSB is 0)
+//      - Skip addition (R7 == 0)
+//      - R1 = 40 << 1 = 80 (shift multiplicand left)
+//      - R2 = 0 >> 1 = 0 (shift multiplier right)
+//      - R5 = 3 + 1 = 4
+//
+//    ... continues for all 32 bits ...
+//
+// 3. Store result:
+//    - Memory[2] = 20 (final result low word)
+//    - Memory[3] = 0 (final result high word)
+
+// PROGRAM -
+// note, i have commented out the address labels for subroutines called as the SISC decoder will not understand these (they are characters and will mess up the program instructions)
+// this maps to the correct location in the program memory
+
+// INITIALIZE
+A0100000   // 00: LDA R1, [0]        ; load multiplicand 
+A0200001   // 01: LDA R2, [1]        ; load multiplier
+21180000   // 02: ADI R3, R0, #0     ; R3 <-- 0 (LOW)
+21200000   // 03: ADI R4, R0, #0     ; R4 <-- 0 (HIGH)
+21210000   // 04: ADI R5, R0, #0     ; R5 <-- 0 (bit counter)
+21220001   // 05: ADI R6, R0, #1     ; R6 <-- 1 (constant)
+
+// LOOP_START:
+16372002   // 06: AND R7, R2, R6     ; R7 <-- R2 & 1 (check LSB)
+51000003   // 07: BRR Z, +3          ; if R7 == 0, skip addition
+11331000   // 08: ADD R3, R3, R1     ; LOW += multiplicand
+70000002   // 09: BNE #0, SKIP_CARRY ; always taken (simulate unconditional)
+12470100   // 0A: SUB R7, R3, R1     ; R7 <-- R3 <-- R1 (check if overflowed)
+51000001   // 0B: BRR Z, SKIP_CARRY  ; if no overflow, skip HIGH++
+21440001   // 0C: ADI R4, R4, #1     ; R4 += 1 (carry to HIGH)
+
+// SKIP_CARRY:
+1B110006   // 0D: SHL R1, R1, R6     ; multiplicand << 1
+1A220006   // 0E: SHR R2, R2, R6     ; multiplier >> 1
+21550001   // 0F: ADI R5, R5, #1     ; counter++
+12470020   // 10: SUB R7, R5, #32    ; R7 <-- counter - 32
+5100FFEF   // 11: BRR Z, LOOP_START  ; if not 32, continue loop
+
+// STORE:
+C0300002   // 12: STA [2], R3        ; store LOW
+C0400003   // 13: STA [3], R4        ; store HIGH
+F0000000   // 14: HLT
